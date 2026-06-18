@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#1a2456" />
+  <title>KTX 3PL Warehouse Tracker</title>
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" href="./icons/logo.png" type="image/png" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <link rel="stylesheet" href="./css/styles.css" />
+</head>
+<body>
+  <!-- ============ LOGIN VIEW ============ -->
+  <main id="auth-view" class="auth-view">
+    <div class="auth-card">
+      <img src="./icons/logo.png" alt="KTX 3PL" class="auth-logo" />
+      <h1 class="auth-title">Warehouse Tracker</h1>
+      <p class="auth-sub">Sign in to manage inbounds, outbounds &amp; paperwork.</p>
+
+      <div id="auth-error" class="alert alert-error" hidden></div>
+
+      <form id="login-form" class="auth-form">
+        <label>
+          <span>Email</span>
+          <input type="email" name="email" autocomplete="email" required />
+        </label>
+        <label>
+          <span>Password</span>
+          <input type="password" name="password" autocomplete="current-password" required minlength="6" />
+        </label>
+        <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+      </form>
+
+      <form id="signup-form" class="auth-form" hidden>
+        <label>
+          <span>Full name</span>
+          <input type="text" name="full_name" autocomplete="name" required />
+        </label>
+        <label>
+          <span>Email</span>
+          <input type="email" name="email" autocomplete="email" required />
+        </label>
+        <label>
+          <span>Password</span>
+          <input type="password" name="password" autocomplete="new-password" required minlength="6" />
+        </label>
+        <button type="submit" class="btn btn-primary btn-block">Create account</button>
+      </form>
+
+      <p class="auth-toggle">
+        <span id="toggle-to-signup">Need an account? <a href="#">Sign up</a></span>
+        <span id="toggle-to-login" hidden>Already have an account? <a href="#">Sign in</a></span>
+      </p>
+    </div>
+  </main>
+
+  <!-- ============ APP VIEW ============ -->
+  <div id="app-view" hidden>
+    <header class="topbar">
+      <img src="./icons/logo.png" alt="KTX 3PL" class="topbar-logo" />
+      <div class="topbar-title">Warehouse Tracker</div>
+      <div class="topbar-spacer"></div>
+      <span id="current-user" class="topbar-user"></span>
+      <button id="logout-btn" class="btn btn-ghost">Sign out</button>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="projects">Projects</button>
+      <button class="tab" data-tab="inbound">Inbound</button>
+      <button class="tab" data-tab="outbound">Outbound</button>
+    </nav>
+
+    <main class="content">
+      <!-- PROJECTS -->
+      <section id="tab-projects" class="tab-panel active">
+        <div class="panel-head">
+          <h2>Projects</h2>
+          <button class="btn btn-primary" data-open-modal="project-modal">+ New project</button>
+        </div>
+        <div id="projects-list" class="cards"></div>
+      </section>
+
+      <!-- INBOUND -->
+      <section id="tab-inbound" class="tab-panel">
+        <div class="panel-head">
+          <h2>Inbound records</h2>
+          <button class="btn btn-primary" data-open-modal="inbound-modal">+ New inbound</button>
+        </div>
+        <div class="filter-row">
+          <label>Project
+            <select id="inbound-project-filter"><option value="">All projects</option></select>
+          </label>
+        </div>
+        <div id="inbound-list" class="records"></div>
+      </section>
+
+      <!-- OUTBOUND -->
+      <section id="tab-outbound" class="tab-panel">
+        <div class="panel-head">
+          <h2>Outbound records</h2>
+          <button class="btn btn-primary" data-open-modal="outbound-modal">+ New outbound</button>
+        </div>
+        <div class="filter-row">
+          <label>Project
+            <select id="outbound-project-filter"><option value="">All projects</option></select>
+          </label>
+        </div>
+        <div id="outbound-list" class="records"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ============ MODALS ============ -->
+  <!-- New project -->
+  <div id="project-modal" class="modal" hidden>
+    <div class="modal-card">
+      <div class="modal-head"><h3>New project</h3><button class="modal-close" data-close-modal>&times;</button></div>
+      <form data-form="project">
+        <label><span>Name</span><input name="name" required /></label>
+        <label><span>Description</span><textarea name="description" rows="2"></textarea></label>
+        <label><span>Status</span>
+          <select name="status">
+            <option value="active">Active</option>
+            <option value="on_hold">On hold</option>
+            <option value="completed">Completed</option>
+          </select>
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" data-close-modal>Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- New inbound -->
+  <div id="inbound-modal" class="modal" hidden>
+    <div class="modal-card">
+      <div class="modal-head"><h3>New inbound</h3><button class="modal-close" data-close-modal>&times;</button></div>
+      <form data-form="inbound">
+        <label><span>Project</span><select name="project_id" data-project-select required></select></label>
+        <label><span>Reference #</span><input name="reference_no" /></label>
+        <label><span>Carrier</span><input name="carrier" /></label>
+        <label><span>Description</span><textarea name="description" rows="2"></textarea></label>
+        <label><span>Quantity</span><input name="quantity" type="number" min="0" /></label>
+        <label><span>Status</span>
+          <select name="status">
+            <option value="pending">Pending</option>
+            <option value="received">Received</option>
+            <option value="discrepancy">Discrepancy</option>
+          </select>
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" data-close-modal>Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- New outbound -->
+  <div id="outbound-modal" class="modal" hidden>
+    <div class="modal-card">
+      <div class="modal-head"><h3>New outbound</h3><button class="modal-close" data-close-modal>&times;</button></div>
+      <form data-form="outbound">
+        <label><span>Project</span><select name="project_id" data-project-select required></select></label>
+        <label><span>Reference #</span><input name="reference_no" /></label>
+        <label><span>Carrier</span><input name="carrier" /></label>
+        <label><span>Destination</span><input name="destination" /></label>
+        <label><span>Description</span><textarea name="description" rows="2"></textarea></label>
+        <label><span>Quantity</span><input name="quantity" type="number" min="0" /></label>
+        <label><span>Status</span>
+          <select name="status">
+            <option value="pending">Pending</option>
+            <option value="shipped">Shipped</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" data-close-modal>Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Attachments -->
+  <div id="attachments-modal" class="modal" hidden>
+    <div class="modal-card">
+      <div class="modal-head"><h3>Paperwork</h3><button class="modal-close" data-close-modal>&times;</button></div>
+      <div id="attachments-list" class="attachments-list"></div>
+      <form data-form="attachment" class="attachment-upload">
+        <input type="file" name="file" accept=".pdf,.png,.jpg,.jpeg,.heic,.webp" required />
+        <button type="submit" class="btn btn-primary">Upload</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <!-- Supabase JS client (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./js/config.js"></script>
+  <script src="./js/supabase.js"></script>
+  <script src="./js/auth.js"></script>
+  <script src="./js/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js').catch(console.error);
+      });
+    }
+  </script>
+</body>
+</html>
