@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Signed Football Helmets</title>
+  <meta name="description" content="Hand-signed football helmets in four tiers, each with a Certificate of Authenticity." />
+  <meta name="theme-color" content="#0f1115" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a href="#/" class="brand" data-store-name>Signature Helmet Co.</a>
+      <nav class="nav">
+        <a href="#/" data-nav="home">Shop</a>
+        <a href="#/verify" data-nav="verify">Verify COA</a>
+        <a href="#/cart" data-nav="cart" class="cart-link">Cart <span class="cart-count" id="cart-count">0</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="app" class="wrap" tabindex="-1"></main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p>Every helmet is hand-signed and comes with a numbered Certificate of Authenticity.</p>
+      <p class="muted">&copy; <span id="year"></span> <span data-store-name>Signature Helmet Co.</span> · <a id="contact-link" href="#">Contact us</a></p>
+    </div>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- Static copy of the order-request form so Netlify Forms can detect it at deploy time.
+       The app submits it with JavaScript; customers never see this one. -->
+  <form name="order-request" data-netlify="true" netlify-honeypot="bot-field" hidden>
+    <input name="bot-field" />
+    <input name="name" /><input name="email" /><input name="phone" />
+    <textarea name="address"></textarea><textarea name="notes"></textarea>
+    <textarea name="order"></textarea><input name="total" />
+  </form>
+
+  <script src="./js/config.js"></script>
+  <script src="./js/catalog.js"></script>
+  <script src="./js/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(() => {}));
+    }
+  </script>
+</body>
+</html>
