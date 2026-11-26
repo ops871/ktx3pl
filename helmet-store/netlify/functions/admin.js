@@ -58,7 +58,10 @@ exports.handler = async (event) => {
           signedOn: L.clean(body.signedOn, 20),
           revealedAt: L.now(),
         };
-        if (!reveal.team || !reveal.signer || !coaSerial) return L.json(400, { error: 'Team, signer and COA serial are required.' });
+        const needsTeam = rip.tierId !== 'grail-rip'; // USA custom paint has no team
+        if ((needsTeam && !reveal.team) || !reveal.signer || !coaSerial) {
+          return L.json(400, { error: (needsTeam ? 'Team, signer' : 'Signer') + ' and COA serial are required.' });
+        }
         const holder = await s.get('coa/' + coaSerial, { type: 'json' });
         if (holder && holder.ripId !== rip.id) return L.json(409, { error: 'That COA serial is already used on another rip.' });
         if (rip.reveal && rip.reveal.coaSerial && rip.reveal.coaSerial !== coaSerial) await s.delete('coa/' + rip.reveal.coaSerial);

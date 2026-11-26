@@ -6,6 +6,7 @@
    ============================================================ */
 (function () {
   const { esc, money, toast, helmetSVG, previewFor, CFG, CAT } = window.LR;
+  const teamText = (rev) => rev.team || 'USA custom paint';
   const LAST_ORDER_KEY = 'lid-ripper-last-order';
   const ADMIN_TOKEN_KEY = 'lid-ripper-admin-token';
 
@@ -82,7 +83,7 @@
     } else {
       body = `
         <dl class="reveal">
-          <dt>Team</dt><dd>${esc(rev.team)}</dd>
+          ${rev.team ? `<dt>Team</dt><dd>${esc(rev.team)}</dd>` : `<dt>Paint</dt><dd>USA custom, one of one</dd>`}
           <dt>Signed by</dt><dd>${esc(rev.signer)}</dd>
           <dt>Helmet</dt><dd>${esc(rev.item)}</dd>
           <dt>COA</dt><dd><a href="#/verify/${encodeURIComponent(rev.coaSerial)}">${esc(rev.coaSerial)}</a></dd>
@@ -271,7 +272,7 @@
       action = `
         <form class="admin-form" data-act="reveal" data-rip="${esc(r.id)}">
           <div class="admin-grid">
-            <input type="text" name="team" placeholder="Team" required value="${esc(rev.team || '')}" />
+            <input type="text" name="team" placeholder="${r.tierId === 'grail-rip' ? 'Team (none for USA paint)' : 'Team'}" ${r.tierId === 'grail-rip' ? '' : 'required'} value="${esc(rev.team || '')}" />
             <input type="text" name="signer" placeholder="Signer" required value="${esc(rev.signer || '')}" />
             <input type="text" name="item" placeholder="Item (${esc(t ? t.helmetType : '')})" value="${esc(rev.item || '')}" />
             <input type="text" name="coaSerial" placeholder="COA serial" required value="${esc(rev.coaSerial || '')}" />
@@ -308,7 +309,7 @@
           <div>
             <h3 style="margin:0">${esc(t ? t.name : r.tierId)} <span class="muted" style="font-size:.85rem">${esc(r.id)}</span></h3>
             <div class="muted" style="font-size:.88rem">Order ${esc(r.orderCode)} · ${esc(r.email)} · ${esc(new Date(r.createdAt).toLocaleDateString())}</div>
-            ${r.reveal ? `<div style="font-size:.9rem;margin-top:4px">${esc(r.reveal.team)} · ${esc(r.reveal.signer)} · COA ${esc(r.reveal.coaSerial)}</div>` : ''}
+            ${r.reveal ? `<div style="font-size:.9rem;margin-top:4px">${esc(teamText(r.reveal))} · ${esc(r.reveal.signer)} · COA ${esc(r.reveal.coaSerial)}</div>` : ''}
           </div>
           ${chip(r.status)}
         </div>

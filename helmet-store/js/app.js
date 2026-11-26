@@ -22,36 +22,14 @@
     toast.t = setTimeout(() => el.classList.remove('show'), 2600);
   }
 
-  /* ---------- helmet illustration ---------- */
-  function helmetSVG({ shell = '#1a2456', mask = '#8a8f96', stripe = '#f4f4f2', matte = false, signed = true, label = '' } = {}) {
-    const gid = 'g' + Math.random().toString(36).slice(2, 8);
-    return `
-<svg viewBox="0 0 220 170" role="img" aria-label="${esc(label || 'Signed football helmet')}">
-  <defs>
-    <radialGradient id="${gid}" cx="40%" cy="30%" r="75%">
-      <stop offset="0" stop-color="#fff" stop-opacity="${matte ? 0.12 : 0.45}"/>
-      <stop offset=".45" stop-color="#fff" stop-opacity="0"/>
-    </radialGradient>
-  </defs>
-  <path d="M28 108 C14 52 58 14 112 14 C162 14 192 50 190 92 L188 104 C187 112 180 116 172 116 L152 116 L144 140 L64 140 C46 140 33 130 28 108 Z" fill="${shell}"/>
-  <path d="M28 108 C14 52 58 14 112 14 C162 14 192 50 190 92 L188 104 C187 112 180 116 172 116 L152 116 L144 140 L64 140 C46 140 33 130 28 108 Z" fill="url(#${gid})"/>
-  <path d="M52 34 C86 10 146 10 178 44" fill="none" stroke="${stripe}" stroke-width="7" stroke-linecap="round" opacity=".9"/>
-  <circle cx="98" cy="98" r="9" fill="rgba(0,0,0,.35)"/>
-  <path d="M64 140 L144 140 L140 150 L70 150 Z" fill="rgba(0,0,0,.35)"/>
-  <g fill="none" stroke="${mask}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M156 74 L206 82 L206 132 L150 138"/>
-    <path d="M154 104 L206 106"/>
-    <path d="M178 78 L178 136"/>
-  </g>
-  ${signed ? `<path d="M50 74 c6 -14 14 -12 12 0 s-6 12 4 4 s10 -14 14 -6 s2 10 10 2 s8 -8 12 -2 c3 4 8 2 14 -4" fill="none" stroke="${shell === '#1b1b1d' || shell === '#1a2456' ? '#e6e6e6' : '#111'}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>` : ''}
-</svg>`;
-  }
+  /* ---------- helmet illustration (js/art.js) ---------- */
+  const helmetSVG = window.LR_ART.helmetSVG;
 
   const tierPreview = {
     'blaster-rip': { shell: '#b3261e', mask: '#8a8f96' },
     'hobby-rip': { shell: '#1a2456', mask: '#8a8f96' },
     'chase-rip': { shell: '#1b1b1d', mask: '#b8962e', stripe: '#b8962e' },
-    'grail-rip': { shell: '#b8962e', mask: '#1b1b1d', stripe: '#1b1b1d' },
+    'grail-rip': { theme: 'usa', mask: '#f4f4f2' },
   };
 
   const previewFor = (tierId) => tierPreview[tierId];
@@ -90,7 +68,7 @@
     saveCart();
   }
   const cartSubtotal = () => cart.reduce((sum, i) => sum + CAT.unitPrice(i.tierId) * i.qty, 0);
-  const randomNote = (tierId) => (tierId === 'grail-rip' ? 'Random one-of-one design, team & signer' : 'Random team & signer');
+  const randomNote = (tierId) => (tierId === 'grail-rip' ? 'USA custom paint · random signer' : 'Random team & signer');
 
   /* ---------- views ---------- */
   function inkDots(rank) {
@@ -116,19 +94,19 @@
         <div>
           <span class="eyebrow">Random · Hand-signed · Certified</span>
           <h1>Rip a lid.<br/>Pull a signature.</h1>
-          <p class="lead">Pick a tier and we'll send you a random hand-signed helmet, from a desk-sized mini to a one-of-one custom build. Every one ships with a numbered Certificate of Authenticity.</p>
+          <p class="lead">Pick a tier and we'll send you a random hand-signed helmet, from a desk-sized mini to a one-of-one USA custom paint job. Every one ships with a numbered Certificate of Authenticity.</p>
           <div class="hero-actions">
             <a class="btn btn-primary" href="#tiers">Shop the tiers</a>
             <a class="btn btn-ghost" href="#/verify">Verify a certificate</a>
           </div>
         </div>
-        <div class="hero-art">${helmetSVG({ ...tierPreview['chase-rip'], label: 'Signed Speed Flex helmet' })}</div>
+        <div class="hero-art">${helmetSVG({ ...tierPreview['chase-rip'], label: 'Lid Ripper signed Speed Flex helmet' })}</div>
       </section>
 
       <section class="section" id="tiers">
         <div class="section-head">
           <h2>Pick your rip</h2>
-          <span class="coa-badge">✓ Every tier: random team &amp; signer, on-helmet autograph + Certificate of Authenticity</span>
+          <span class="coa-badge">✓ Every tier: random pull, on-helmet autograph + Certificate of Authenticity</span>
         </div>
         <div class="tiers">${CAT.tiers.map(tierCard).join('')}</div>
       </section>
@@ -171,7 +149,7 @@
           <p>${esc(t.description)}</p>
           <ul class="features">${t.features.map((f) => `<li>${esc(f)}</li>`).join('')}</ul>
           <form class="panel" id="add-form" novalidate>
-            <div class="notice">Every helmet is a random draw: the ${t.id === 'grail-rip' ? 'design, team and signer are' : 'team and signer are'} a surprise until it arrives. The picture is an example only.</div>
+            <div class="notice">Every helmet is a random draw: ${t.id === 'grail-rip' ? 'the paint is a one-of-one USA design and the signer is' : 'the team and signer are'} a surprise until it arrives. The picture is an example only.</div>
             <div class="add-row">
               <div>
                 <label for="f-qty">Qty</label>
@@ -451,6 +429,7 @@
   /* ---------- boot ---------- */
   document.title = CFG.storeName + ' · Random Signed Football Helmets';
   document.querySelectorAll('[data-store-name]').forEach((el) => (el.textContent = CFG.storeName));
+  document.getElementById('brand-mark').innerHTML = window.LR_ART.logoSVG({}, '');
   document.getElementById('year').textContent = new Date().getFullYear();
   document.getElementById('contact-link').href = 'mailto:' + CFG.contactEmail;
   updateCartCount();

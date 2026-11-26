@@ -12,7 +12,7 @@ autograph and a numbered Certificate of Authenticity (COA).
 | **Blaster Rip** | Mini helmet | $149 |
 | **Hobby Rip** | Full-size replica | $399 |
 | **Chase Rip** | Speed Flex authentic | $799 |
-| **Grail Rip** | One-of-one custom-painted build | $1,299 |
+| **Grail Rip** | One-of-one hand-painted USA theme (random signer, no team) | $1,299 |
 
 ## What's in it
 
