@@ -40,7 +40,8 @@ exports.handler = async (event) => {
   const origin = process.env.URL || `https://${event.headers.host}`;
   const p = new URLSearchParams();
   p.append('mode', 'payment');
-  p.append('success_url', `${origin}/#/success/paid`);
+  // Stripe fills in {CHECKOUT_SESSION_ID}; the success page turns it into the order code.
+  p.append('success_url', `${origin}/?session_id={CHECKOUT_SESSION_ID}#/success/paid`);
   p.append('cancel_url', `${origin}/#/cart`);
   p.append('billing_address_collection', 'required');
   p.append('shipping_address_collection[allowed_countries][0]', 'US');
@@ -50,6 +51,8 @@ exports.handler = async (event) => {
   p.append('shipping_options[0][shipping_rate_data][fixed_amount][amount]', String(SHIPPING_FLAT));
   p.append('shipping_options[0][shipping_rate_data][fixed_amount][currency]', CATALOG.currency);
 
+  // Read by stripe-webhook.js to create one rip per helmet.
+  p.append('metadata[cart]', items.map((it) => `${it.tier.id}:${it.qty}`).join(','));
   items.forEach((it, i) => {
     const desc = `${describe(it.tier)} · Hand-signed with Certificate of Authenticity`;
     p.append(`line_items[${i}][quantity]`, String(it.qty));

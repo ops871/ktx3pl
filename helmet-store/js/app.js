@@ -134,6 +134,14 @@
       </section>
 
       <section class="section">
+        <div class="section-head"><h2>Ship it or sell it</h2><p class="muted">After your rip is revealed on <a href="#/rips">My Rips</a>, you decide what happens next.</p></div>
+        <div class="choice-row">
+          <div class="choice-card"><h3>📦 Ship it</h3><p class="muted">Keep the lid. We ship it insured to your door with its COA.</p></div>
+          <div class="choice-card"><h3>💵 Sell it back</h3><p class="muted">Not your team? Take our instant buyback offer and get paid by PayPal, Venmo, Zelle or Cash App.</p></div>
+        </div>
+      </section>
+
+      <section class="section">
         <div class="section-head"><h2>How authentication works</h2></div>
         <div class="steps">
           <div class="step"><h3>Signed in person</h3><p>Each helmet is signed by hand at a witnessed signing, never with an autopen or a stamp.</p></div>
@@ -318,13 +326,17 @@
 
   function viewSuccess(kind) {
     if (kind !== 'request') { cart = []; saveCart(); }
+    // Stripe sends the customer back with ?session_id=...; the order code is derived from it.
+    const sid = new URLSearchParams(location.search).get('session_id');
+    const code = kind !== 'request' && sid ? 'LR-' + sid.slice(-8).toUpperCase() : null;
     return `
       <div class="empty">
         <span class="coa-badge">✓ ${kind === 'request' ? 'Request received' : 'Order confirmed'}</span>
         <h1 style="margin-top:16px">Thank you!</h1>
+        ${code ? `<p>Your order code is <strong class="order-code">${esc(code)}</strong>. Save it: you'll use it with your email on <a href="#/rips/${esc(code)}">My Rips</a>.</p>` : ''}
         <p class="muted">${kind === 'request'
-          ? "We'll email you an invoice shortly."
-          : "Your payment went through. We'll email you when your helmet has been signed, with its COA serial number."}</p>
+          ? "We'll email you an invoice shortly. Once it's paid we'll send your order code for My Rips."
+          : "When your helmets are revealed, they'll show up on My Rips. For each one you can ship it home or sell it back to us."}</p>
         <a class="btn btn-ghost" href="#/">Back to shop</a>
       </div>`;
   }
@@ -363,8 +375,15 @@
     const out = document.getElementById('verify-result');
     out.innerHTML = '<p class="muted">Checking…</p>';
     try {
-      const certs = await loadCerts();
-      const c = certs.find((x) => x.serial.toUpperCase() === serial.toUpperCase());
+      let c = null;
+      try {
+        const res = await fetch('/.netlify/functions/verify?serial=' + encodeURIComponent(serial));
+        if (res.ok && (res.headers.get('content-type') || '').includes('json')) c = await res.json();
+      } catch (e) { /* functions unavailable (e.g. local preview): fall back to the file */ }
+      if (!c) {
+        const certs = await loadCerts();
+        c = certs.find((x) => x.serial.toUpperCase() === serial.toUpperCase());
+      }
       if (!c) {
         out.innerHTML = `<div class="cert"><div class="cert-head bad">✕ No certificate found for ${esc(serial)}</div><dl><dt>What now?</dt><dd>Check the serial for typos, or <a href="mailto:${esc(CFG.contactEmail)}">contact us</a> and we'll look into it.</dd></dl></div>`;
         return;
@@ -376,11 +395,12 @@
           <dl>
             <dt>Tier</dt><dd>${esc(t ? t.name : c.tier)}</dd>
             <dt>Item</dt><dd>${esc(c.item)}</dd>
+            ${c.team ? `<dt>Team</dt><dd>${esc(c.team)}</dd>` : ''}
             <dt>Signed by</dt><dd>${esc(c.signer)}</dd>
             ${c.inscription ? `<dt>Inscription</dt><dd>${esc(c.inscription)}</dd>` : ''}
-            <dt>Signed on</dt><dd>${esc(c.signedOn)}</dd>
+            ${c.signedOn ? `<dt>Signed on</dt><dd>${esc(c.signedOn)}</dd>` : ''}
             <dt>Witnessed</dt><dd>${esc(c.witness)}</dd>
-            <dt>Hologram #</dt><dd>${esc(c.hologram)}</dd>
+            ${c.hologram ? `<dt>Hologram #</dt><dd>${esc(c.hologram)}</dd>` : ''}
           </dl>
         </div>`;
     } catch (err) {
@@ -415,12 +435,18 @@
         nav = 'verify'; app.innerHTML = viewVerify(param && decodeURIComponent(param)); bindVerify(param && decodeURIComponent(param)); break;
       case 'success':
         app.innerHTML = viewSuccess(param); break;
+      case 'rips':
+        nav = 'rips'; app.innerHTML = window.LR_PAGES.rips.view(param && decodeURIComponent(param)); window.LR_PAGES.rips.bind(param && decodeURIComponent(param)); break;
+      case 'admin':
+        nav = ''; app.innerHTML = window.LR_PAGES.admin.view(); window.LR_PAGES.admin.bind(); break;
       default:
         app.innerHTML = viewNotFound();
     }
     document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('active', a.dataset.nav === nav));
     window.scrollTo(0, 0);
   }
+
+  window.LR = { esc, money, toast, helmetSVG, previewFor, CFG, CAT };
 
   /* ---------- boot ---------- */
   document.title = CFG.storeName + ' · Random Signed Football Helmets';
@@ -429,5 +455,5 @@
   document.getElementById('contact-link').href = 'mailto:' + CFG.contactEmail;
   updateCartCount();
   window.addEventListener('hashchange', render);
-  render();
+  document.addEventListener('DOMContentLoaded', render); // after js/rips.js has loaded
 })();
