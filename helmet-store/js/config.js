@@ -3,7 +3,7 @@
    ============================================================ */
 window.STORE_CONFIG = {
   // Shown in the header, page title and footer.
-  storeName: 'Signature Helmet Co.',
+  storeName: 'Lid Ripper',
 
   // Where order requests and customer questions go.
   contactEmail: 'orders@example.com',

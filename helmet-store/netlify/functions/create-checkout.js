@@ -19,7 +19,7 @@ function validateItem(raw) {
 }
 
 const describe = (tier) =>
-  tier.id === 'legacy-ink' ? 'Random one-of-one design, team & signer' : 'Random team & signer';
+  tier.id === 'grail-rip' ? 'Random one-of-one design, team & signer' : 'Random team & signer';
 
 const json = (statusCode, body) => ({ statusCode, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 

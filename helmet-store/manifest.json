@@ -1,7 +1,7 @@
 {
-  "name": "Signed Football Helmets",
-  "short_name": "Helmets",
-  "description": "Hand-signed football helmets in four tiers, each with a Certificate of Authenticity.",
+  "name": "Lid Ripper",
+  "short_name": "Lid Ripper",
+  "description": "Random hand-signed football helmets in four tiers, each with a Certificate of Authenticity.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

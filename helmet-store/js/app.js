@@ -48,10 +48,10 @@
   }
 
   const tierPreview = {
-    'rookie-ink': { shell: '#b3261e', mask: '#8a8f96' },
-    'starter-ink': { shell: '#1a2456', mask: '#8a8f96' },
-    'franchise-ink': { shell: '#1b1b1d', mask: '#b8962e', stripe: '#b8962e' },
-    'legacy-ink': { shell: '#b8962e', mask: '#1b1b1d', stripe: '#1b1b1d' },
+    'blaster-rip': { shell: '#b3261e', mask: '#8a8f96' },
+    'hobby-rip': { shell: '#1a2456', mask: '#8a8f96' },
+    'chase-rip': { shell: '#1b1b1d', mask: '#b8962e', stripe: '#b8962e' },
+    'grail-rip': { shell: '#b8962e', mask: '#1b1b1d', stripe: '#1b1b1d' },
   };
 
   const previewFor = (tierId) => tierPreview[tierId];
@@ -90,7 +90,7 @@
     saveCart();
   }
   const cartSubtotal = () => cart.reduce((sum, i) => sum + CAT.unitPrice(i.tierId) * i.qty, 0);
-  const randomNote = (tierId) => (tierId === 'legacy-ink' ? 'Random one-of-one design, team & signer' : 'Random team & signer');
+  const randomNote = (tierId) => (tierId === 'grail-rip' ? 'Random one-of-one design, team & signer' : 'Random team & signer');
 
   /* ---------- views ---------- */
   function inkDots(rank) {
@@ -101,12 +101,12 @@
     return `
       <a class="tier-card${t.featured ? ' featured' : ''}" href="#/tier/${t.id}">
         ${t.featured ? '<span class="tier-flag">Most popular</span>' : ''}
-        <div class="tier-art" style="${t.id === 'rookie-ink' ? 'padding:22px' : ''}">${helmetSVG({ ...tierPreview[t.id], label: t.name + ' helmet' })}</div>
+        <div class="tier-art" style="${t.id === 'blaster-rip' ? 'padding:22px' : ''}">${helmetSVG({ ...tierPreview[t.id], label: t.name + ' helmet' })}</div>
         ${inkDots(t.rank)}
         <div class="tier-type">${esc(t.helmetType)}</div>
         <div class="tier-name">${esc(t.name)}</div>
         <div class="tier-tagline">${esc(t.tagline)}</div>
-        <div class="tier-price">${t.id === 'legacy-ink' ? '<small>from </small>' : ''}${money(t.price)}</div>
+        <div class="tier-price">${money(t.price)}</div>
       </a>`;
   }
 
@@ -114,20 +114,20 @@
     return `
       <section class="hero">
         <div>
-          <span class="eyebrow">Hand-signed · Certified</span>
-          <h1>Random signed helmets,<br/>four ways to play.</h1>
+          <span class="eyebrow">Random · Hand-signed · Certified</span>
+          <h1>Rip a lid.<br/>Pull a signature.</h1>
           <p class="lead">Pick a tier and we'll send you a random hand-signed helmet, from a desk-sized mini to a one-of-one custom build. Every one ships with a numbered Certificate of Authenticity.</p>
           <div class="hero-actions">
             <a class="btn btn-primary" href="#tiers">Shop the tiers</a>
             <a class="btn btn-ghost" href="#/verify">Verify a certificate</a>
           </div>
         </div>
-        <div class="hero-art">${helmetSVG({ ...tierPreview['franchise-ink'], label: 'Signed Speed Flex helmet' })}</div>
+        <div class="hero-art">${helmetSVG({ ...tierPreview['chase-rip'], label: 'Signed Speed Flex helmet' })}</div>
       </section>
 
       <section class="section" id="tiers">
         <div class="section-head">
-          <h2>Choose your tier</h2>
+          <h2>Pick your rip</h2>
           <span class="coa-badge">✓ Every tier: random team &amp; signer, on-helmet autograph + Certificate of Authenticity</span>
         </div>
         <div class="tiers">${CAT.tiers.map(tierCard).join('')}</div>
@@ -150,7 +150,7 @@
     return `
       <a class="back" href="#/">← All tiers</a>
       <div class="product">
-        <div class="product-art${t.id === 'rookie-ink' ? ' mini' : ''}">
+        <div class="product-art${t.id === 'blaster-rip' ? ' mini' : ''}">
           <span class="random-flag">? Random draw</span>
           ${helmetSVG({ ...previewFor(t.id), label: t.name + ' helmet (example)' })}
         </div>
@@ -163,7 +163,7 @@
           <p>${esc(t.description)}</p>
           <ul class="features">${t.features.map((f) => `<li>${esc(f)}</li>`).join('')}</ul>
           <form class="panel" id="add-form" novalidate>
-            <div class="notice">Every helmet is a random draw: the ${t.id === 'legacy-ink' ? 'design, team and signer are' : 'team and signer are'} a surprise until it arrives. The picture is an example only.</div>
+            <div class="notice">Every helmet is a random draw: the ${t.id === 'grail-rip' ? 'design, team and signer are' : 'team and signer are'} a surprise until it arrives. The picture is an example only.</div>
             <div class="add-row">
               <div>
                 <label for="f-qty">Qty</label>
@@ -345,7 +345,7 @@
         <h1>Verify a COA</h1>
         <p class="muted">Enter the serial number printed on your certificate. It matches the hologram on your helmet.</p>
         <form class="verify-form" id="verify-form">
-          <input type="text" name="serial" placeholder="e.g. SHC-DEMO-0001" value="${esc(serial || '')}" required aria-label="Serial number" />
+          <input type="text" name="serial" placeholder="e.g. LR-DEMO-0001" value="${esc(serial || '')}" required aria-label="Serial number" />
           <button class="btn btn-primary" type="submit">Verify</button>
         </form>
         <div id="verify-result"></div>
@@ -423,7 +423,7 @@
   }
 
   /* ---------- boot ---------- */
-  document.title = CFG.storeName + ' · Signed Football Helmets';
+  document.title = CFG.storeName + ' · Random Signed Football Helmets';
   document.querySelectorAll('[data-store-name]').forEach((el) => (el.textContent = CFG.storeName));
   document.getElementById('year').textContent = new Date().getFullYear();
   document.getElementById('contact-link').href = 'mailto:' + CFG.contactEmail;

@@ -13,10 +13,10 @@
 
     tiers: [
       {
-        id: 'rookie-ink',
-        name: 'Rookie Ink',
+        id: 'blaster-rip',
+        name: 'Blaster Rip',
         helmetType: 'Mini Helmet',
-        tagline: 'Where every collection starts.',
+        tagline: 'Mini lid, real ink. The rip that starts a collection.',
         price: 14900,
         rank: 1,
         description:
@@ -30,10 +30,10 @@
         ],
       },
       {
-        id: 'starter-ink',
-        name: 'Starter Ink',
+        id: 'hobby-rip',
+        name: 'Hobby Rip',
         helmetType: 'Full-Size Replica',
-        tagline: 'Full size. Full signature.',
+        tagline: 'Full-size lid. Full-size hit.',
         price: 39900,
         rank: 2,
         description:
@@ -48,10 +48,10 @@
         ],
       },
       {
-        id: 'franchise-ink',
-        name: 'Franchise Ink',
+        id: 'chase-rip',
+        name: 'Chase Rip',
         helmetType: 'Speed Flex Authentic',
-        tagline: 'The helmet the pros wear, signed.',
+        tagline: 'The Speed Flex lid every collector chases.',
         price: 79900,
         rank: 3,
         featured: true,
@@ -67,10 +67,10 @@
         ],
       },
       {
-        id: 'legacy-ink',
-        name: 'Legacy Ink',
+        id: 'grail-rip',
+        name: 'Grail Rip',
         helmetType: 'Custom Build',
-        tagline: 'One of one. Signed forever.',
+        tagline: 'One of one. The lid you rip for.',
         price: 129900,
         rank: 4,
         description:

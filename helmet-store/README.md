@@ -1,18 +1,18 @@
-# Signed Football Helmet Store
+# Lid Ripper
 
 A standalone storefront for hand-signed football helmets. It's separate from the
 KTX 3PL warehouse tracker in the repo root: it shares no code with it and deploys as its own site.
 
 Every helmet is a **random draw**: the customer picks a tier, and the team and signer
-(plus the design, for Legacy Ink) are a surprise. Every helmet includes an on-helmet
+(plus the design, for Grail Rip) are a surprise. Every helmet includes an on-helmet
 autograph and a numbered Certificate of Authenticity (COA).
 
 | Tier | Helmet | Placeholder price |
 |---|---|---|
-| **Rookie Ink** | Mini helmet | $149 |
-| **Starter Ink** | Full-size replica | $399 |
-| **Franchise Ink** | Speed Flex authentic | $799 |
-| **Legacy Ink** | One-of-one custom-painted build | $1,299 |
+| **Blaster Rip** | Mini helmet | $149 |
+| **Hobby Rip** | Full-size replica | $399 |
+| **Chase Rip** | Speed Flex authentic | $799 |
+| **Grail Rip** | One-of-one custom-painted build | $1,299 |
 
 ## What's in it
 
@@ -65,8 +65,8 @@ Add an entry to `data/certificates.json` and redeploy:
 
 ```json
 {
-  "serial": "SHC-000123",
-  "tier": "starter-ink",
+  "serial": "LR-000123",
+  "tier": "hobby-rip",
   "item": "Full-Size Replica Helmet",
   "signer": "Player Name",
   "inscription": "Optional",

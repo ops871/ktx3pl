@@ -1,6 +1,6 @@
 /* Caches the app shell so the store opens offline. Certificates and
    checkout always go to the network. Bump VERSION when files change. */
-const VERSION = 'helmet-store-v2';
+const VERSION = 'lid-ripper-v3';
 const SHELL = [
   './', './index.html', './manifest.json', './css/styles.css',
   './js/config.js', './js/catalog.js', './js/app.js', './icons/icon.svg',
