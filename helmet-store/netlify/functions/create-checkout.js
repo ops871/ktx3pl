@@ -1,59 +1,25 @@
 /* ============================================================
    Creates a Stripe Checkout Session for the cart.
    Prices are recomputed here from js/catalog.js — the browser only
-   sends tier ids, options and quantities.
+   sends tier ids and quantities.
    Requires the STRIPE_SECRET_KEY environment variable in Netlify.
    ============================================================ */
 const CATALOG = require('../../js/catalog.js');
 
 const SHIPPING_FLAT = 2500; // cents; keep in sync with js/config.js
 const MAX_QTY = 10;
-const TEXT_FIELDS = ['team', 'signer', 'inscription', 'personalizationName', 'personalizationNumber'];
 
-function clean(v, max) {
-  return String(v || '').replace(/[\u0000-\u001f]/g, '').trim().slice(0, max);
-}
-
+// Every helmet is a random draw, so an item is just a tier and a quantity.
 function validateItem(raw) {
   const tier = CATALOG.findTier(raw && raw.tierId);
   if (!tier) throw new Error('Unknown helmet tier');
   const qty = parseInt(raw.qty, 10);
   if (!(qty >= 1 && qty <= MAX_QTY)) throw new Error('Invalid quantity');
-
-  const o = raw.options || {};
-  const options = {};
-  TEXT_FIELDS.forEach((k) => { if (o[k]) options[k] = clean(o[k], 60); });
-  if (!options.signer) throw new Error('Each helmet needs a signer');
-  if (tier.options.includes('team') && !options.team) throw new Error('Each helmet needs a team');
-
-  if (tier.options.includes('shellColor')) {
-    for (const g of ['shellColor', 'facemaskColor', 'finish']) {
-      if (!CATALOG.findOption(g, o[g])) throw new Error('Invalid custom option');
-      options[g] = o[g];
-    }
-    if (options.personalizationNumber && !/^[0-9]{1,2}$/.test(options.personalizationNumber)) {
-      throw new Error('Invalid personalization number');
-    }
-  } else {
-    delete options.personalizationName;
-    delete options.personalizationNumber;
-  }
-  return { tier, qty, options, unit: CATALOG.unitPrice(tier.id, options) };
+  return { tier, qty, unit: CATALOG.unitPrice(tier.id) };
 }
 
-function describe(tierId, o) {
-  const parts = [];
-  if (o.team) parts.push('Team: ' + o.team);
-  if (o.shellColor) parts.push('Shell: ' + CATALOG.findOption('shellColor', o.shellColor).label);
-  if (o.facemaskColor) parts.push('Facemask: ' + CATALOG.findOption('facemaskColor', o.facemaskColor).label);
-  if (o.finish) parts.push('Finish: ' + CATALOG.findOption('finish', o.finish).label);
-  if (o.personalizationName || o.personalizationNumber) {
-    parts.push('Personalized: ' + [o.personalizationName, o.personalizationNumber && '#' + o.personalizationNumber].filter(Boolean).join(' '));
-  }
-  parts.push('Signer: ' + o.signer);
-  if (o.inscription) parts.push('Inscription: ' + o.inscription);
-  return parts.join(' · ');
-}
+const describe = (tier) =>
+  tier.id === 'legacy-ink' ? 'Random one-of-one design, team & signer' : 'Random team & signer';
 
 const json = (statusCode, body) => ({ statusCode, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 
@@ -85,7 +51,7 @@ exports.handler = async (event) => {
   p.append('shipping_options[0][shipping_rate_data][fixed_amount][currency]', CATALOG.currency);
 
   items.forEach((it, i) => {
-    const desc = describe(it.tier.id, it.options);
+    const desc = `${describe(it.tier)} · Hand-signed with Certificate of Authenticity`;
     p.append(`line_items[${i}][quantity]`, String(it.qty));
     p.append(`line_items[${i}][price_data][currency]`, CATALOG.currency);
     p.append(`line_items[${i}][price_data][unit_amount]`, String(it.unit));

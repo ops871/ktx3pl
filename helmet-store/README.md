@@ -3,18 +3,20 @@
 A standalone storefront for hand-signed football helmets. It's separate from the
 KTX 3PL warehouse tracker in the repo root: it shares no code with it and deploys as its own site.
 
-Every helmet includes an on-helmet autograph and a numbered Certificate of Authenticity (COA).
+Every helmet is a **random draw**: the customer picks a tier, and the team and signer
+(plus the design, for Legacy Ink) are a surprise. Every helmet includes an on-helmet
+autograph and a numbered Certificate of Authenticity (COA).
 
 | Tier | Helmet | Placeholder price |
 |---|---|---|
 | **Rookie Ink** | Mini helmet | $149 |
 | **Starter Ink** | Full-size replica | $399 |
 | **Franchise Ink** | Speed Flex authentic | $799 |
-| **Legacy Ink** | Custom build (shell, facemask, finish, name/number) | from $1,299 |
+| **Legacy Ink** | One-of-one custom-painted build | $1,299 |
 
 ## What's in it
 
-- **Shop.** Tier cards, a product page per tier, and a live helmet preview for the custom builder.
+- **Shop.** Tier cards and a product page per tier. Customers choose only the tier and quantity.
 - **Cart.** Saved in the browser. Customers can change quantities or remove items.
 - **Checkout.** Has two modes, set in `js/config.js`:
   - `request` (default): the customer submits an order request and you invoice them. Requests
@@ -31,7 +33,7 @@ helmet-store/
 ├── css/styles.css
 ├── js/
 │   ├── config.js        ← store name, contact email, checkout mode, shipping
-│   ├── catalog.js       ← tiers, prices, custom options (used by browser AND server)
+│   ├── catalog.js       ← tiers and prices (used by browser AND server)
 │   └── app.js
 ├── data/certificates.json  ← COA records for the verify page
 ├── netlify/functions/create-checkout.js  ← Stripe checkout (server side)
@@ -89,6 +91,8 @@ and Stripe checkout needs `netlify dev` to run the function.
 
 ## Notes
 
+- Random/mystery sales: some states regulate "mystery box" style sales. Have a lawyer check
+  your terms (e.g. whether you list the possible teams/signers, and your return policy).
 - "Speed Flex" is a Riddell trademark. Describe genuine Riddell SpeedFlex helmets accurately,
   and keep your own tier names (above) as the brand.
 - Team logos are licensed marks. Sell licensed helmets, and don't add team logos to the site art

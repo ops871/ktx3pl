@@ -54,25 +54,23 @@
     'legacy-ink': { shell: '#b8962e', mask: '#1b1b1d', stripe: '#1b1b1d' },
   };
 
-  function previewFor(tierId, options) {
-    if (tierId === 'legacy-ink' && options) {
-      const shell = CAT.findOption('shellColor', options.shellColor);
-      const mask = CAT.findOption('facemaskColor', options.facemaskColor);
-      return {
-        shell: shell ? shell.hex : tierPreview[tierId].shell,
-        mask: mask ? mask.hex : tierPreview[tierId].mask,
-        stripe: shell && (shell.id === 'white' || shell.id === 'chrome') ? '#1b1b1d' : '#f4f4f2',
-        matte: options.finish === 'matte',
-      };
-    }
-    return tierPreview[tierId];
-  }
+  const previewFor = (tierId) => tierPreview[tierId];
 
-  /* ---------- cart (localStorage, guarded) ---------- */
+  /* ---------- cart (localStorage, guarded) ----------
+     One line per tier: { tierId, qty }. Every helmet is a random draw,
+     so there are no per-item options. */
   function loadCart() {
     try {
       const v = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
-      return Array.isArray(v) ? v.filter((i) => CAT.findTier(i.tierId)) : [];
+      if (!Array.isArray(v)) return [];
+      const merged = [];
+      v.forEach((i) => {
+        if (!CAT.findTier(i.tierId)) return;
+        const line = merged.find((m) => m.tierId === i.tierId);
+        if (line) line.qty = Math.min(line.qty + i.qty, 10);
+        else merged.push({ tierId: i.tierId, qty: Math.max(1, Math.min(10, i.qty | 0)) });
+      });
+      return merged;
     } catch (e) {
       return [];
     }
@@ -85,27 +83,14 @@
   function updateCartCount() {
     document.getElementById('cart-count').textContent = cart.reduce((n, i) => n + i.qty, 0);
   }
-  function addToCart(tierId, options, qty) {
-    const key = tierId + '|' + JSON.stringify(options);
-    const existing = cart.find((i) => i.key === key);
+  function addToCart(tierId, qty) {
+    const existing = cart.find((i) => i.tierId === tierId);
     if (existing) existing.qty = Math.min(existing.qty + qty, 10);
-    else cart.push({ key, tierId, options, qty });
+    else cart.push({ tierId, qty });
     saveCart();
   }
-  const cartSubtotal = () => cart.reduce((sum, i) => sum + CAT.unitPrice(i.tierId, i.options) * i.qty, 0);
-
-  function describeOptions(tierId, o) {
-    const parts = [];
-    if (o.team) parts.push('Team: ' + o.team);
-    if (o.shellColor) parts.push('Shell: ' + CAT.findOption('shellColor', o.shellColor).label);
-    if (o.facemaskColor) parts.push('Facemask: ' + CAT.findOption('facemaskColor', o.facemaskColor).label);
-    if (o.finish) parts.push('Finish: ' + CAT.findOption('finish', o.finish).label);
-    if (o.personalizationName || o.personalizationNumber)
-      parts.push('Personalized: ' + [o.personalizationName, o.personalizationNumber && '#' + o.personalizationNumber].filter(Boolean).join(' '));
-    if (o.signer) parts.push('Signer: ' + o.signer);
-    if (o.inscription) parts.push('Inscription: "' + o.inscription + '"');
-    return parts;
-  }
+  const cartSubtotal = () => cart.reduce((sum, i) => sum + CAT.unitPrice(i.tierId) * i.qty, 0);
+  const randomNote = (tierId) => (tierId === 'legacy-ink' ? 'Random one-of-one design, team & signer' : 'Random team & signer');
 
   /* ---------- views ---------- */
   function inkDots(rank) {
@@ -130,8 +115,8 @@
       <section class="hero">
         <div>
           <span class="eyebrow">Hand-signed · Certified</span>
-          <h1>Signed helmets,<br/>four ways to own one.</h1>
-          <p class="lead">From a desk-sized mini to a one-of-one custom build, every helmet is hand-signed and ships with a numbered Certificate of Authenticity.</p>
+          <h1>Random signed helmets,<br/>four ways to play.</h1>
+          <p class="lead">Pick a tier and we'll send you a random hand-signed helmet, from a desk-sized mini to a one-of-one custom build. Every one ships with a numbered Certificate of Authenticity.</p>
           <div class="hero-actions">
             <a class="btn btn-primary" href="#tiers">Shop the tiers</a>
             <a class="btn btn-ghost" href="#/verify">Verify a certificate</a>
@@ -143,7 +128,7 @@
       <section class="section" id="tiers">
         <div class="section-head">
           <h2>Choose your tier</h2>
-          <span class="coa-badge">✓ Every tier: on-helmet autograph + Certificate of Authenticity</span>
+          <span class="coa-badge">✓ Every tier: random team &amp; signer, on-helmet autograph + Certificate of Authenticity</span>
         </div>
         <div class="tiers">${CAT.tiers.map(tierCard).join('')}</div>
       </section>
@@ -159,73 +144,26 @@
       </section>`;
   }
 
-  function swatchGroup(name, label, list, selected) {
-    return `
-      <div class="opt-group">
-        <label>${label}</label>
-        <div class="swatches">
-          ${list.map((o) => `
-            <label class="swatch">
-              <input type="radio" name="${name}" value="${o.id}" ${o.id === selected ? 'checked' : ''} />
-              <span>${o.hex ? `<i style="background:${o.hex}"></i>` : ''}${esc(o.label)}${o.add ? ` <em class="muted">+${money(o.add)}</em>` : ''}</span>
-            </label>`).join('')}
-        </div>
-      </div>`;
-  }
-
   function viewTier(id) {
     const t = CAT.findTier(id);
     if (!t) return viewNotFound();
-    const co = CAT.customOptions;
-    const isCustom = t.options.includes('shellColor');
-    const defaults = isCustom ? { shellColor: 'navy', facemaskColor: 'grey', finish: 'gloss' } : null;
-
-    const fields = [];
-    if (isCustom) {
-      fields.push(swatchGroup('shellColor', 'Shell color', co.shellColor, defaults.shellColor));
-      fields.push(swatchGroup('facemaskColor', 'Facemask color', co.facemaskColor, defaults.facemaskColor));
-      fields.push(swatchGroup('finish', 'Finish', co.finish, defaults.finish));
-      fields.push(`
-        <div class="opt-group">
-          <label>Personalization <span class="muted">(optional, +${money(co.personalizationPrice)})</span></label>
-          <div class="row-2">
-            <input type="text" name="personalizationName" maxlength="16" placeholder="Name on back" />
-            <input type="text" name="personalizationNumber" maxlength="2" inputmode="numeric" pattern="[0-9]{1,2}" placeholder="Number" />
-          </div>
-        </div>`);
-    }
-    if (t.options.includes('team')) {
-      fields.push(`
-        <div class="field">
-          <label for="f-team">Team / colorway</label>
-          <input id="f-team" type="text" name="team" maxlength="60" required placeholder="e.g. your favorite team" />
-        </div>`);
-    }
-    fields.push(`
-      <div class="field">
-        <label for="f-signer">Who should sign it?</label>
-        <input id="f-signer" type="text" name="signer" maxlength="60" required placeholder="Player name" />
-        <div class="hint">We confirm signer availability before your helmet is signed. If they're unavailable we'll offer an alternative or a full refund.</div>
-      </div>
-      <div class="field">
-        <label for="f-inscription">Inscription <span class="muted">(optional)</span></label>
-        <input id="f-inscription" type="text" name="inscription" maxlength="40" placeholder="e.g. a stat, year or short message" />
-      </div>`);
-
     return `
       <a class="back" href="#/">← All tiers</a>
       <div class="product">
-        <div class="product-art${t.id === 'rookie-ink' ? ' mini' : ''}" id="product-art">${helmetSVG({ ...previewFor(t.id, defaults), label: t.name + ' helmet' })}</div>
+        <div class="product-art${t.id === 'rookie-ink' ? ' mini' : ''}">
+          <span class="random-flag">? Random draw</span>
+          ${helmetSVG({ ...previewFor(t.id), label: t.name + ' helmet (example)' })}
+        </div>
         <div>
           ${inkDots(t.rank)}
           <div class="tier-type">${esc(t.helmetType)}</div>
           <h1 style="margin-bottom:.15em">${esc(t.name)}</h1>
           <p class="muted">${esc(t.tagline)}</p>
-          <div class="price-big" id="price">${money(CAT.unitPrice(t.id, defaults || {}))}</div>
+          <div class="price-big">${money(t.price)}</div>
           <p>${esc(t.description)}</p>
           <ul class="features">${t.features.map((f) => `<li>${esc(f)}</li>`).join('')}</ul>
           <form class="panel" id="add-form" novalidate>
-            ${fields.join('')}
+            <div class="notice">Every helmet is a random draw: the ${t.id === 'legacy-ink' ? 'design, team and signer are' : 'team and signer are'} a surprise until it arrives. The picture is an example only.</div>
             <div class="add-row">
               <div>
                 <label for="f-qty">Qty</label>
@@ -238,47 +176,14 @@
       </div>`;
   }
 
-  function readOptions(form, tier) {
-    const fd = new FormData(form);
-    const o = {};
-    const keys = ['team', 'signer', 'inscription', 'shellColor', 'facemaskColor', 'finish', 'personalizationName', 'personalizationNumber'];
-    keys.forEach((k) => {
-      const v = (fd.get(k) || '').toString().trim();
-      if (v) o[k] = v;
-    });
-    if (!tier.options.includes('shellColor')) {
-      delete o.shellColor; delete o.facemaskColor; delete o.finish; delete o.personalizationName; delete o.personalizationNumber;
-    }
-    return o;
-  }
-
   function bindTier(id) {
     const t = CAT.findTier(id);
     const form = document.getElementById('add-form');
     if (!form) return;
-    const refresh = () => {
-      const o = readOptions(form, t);
-      document.getElementById('price').textContent = money(CAT.unitPrice(t.id, o));
-      if (t.options.includes('shellColor')) {
-        document.getElementById('product-art').innerHTML = helmetSVG({ ...previewFor(t.id, o), label: t.name + ' helmet' });
-      }
-    };
-    form.addEventListener('input', refresh);
-    form.addEventListener('change', refresh);
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const num = form.querySelector('[name=personalizationNumber]');
-      if (num && num.value && !/^[0-9]{1,2}$/.test(num.value)) {
-        num.focus();
-        return toast('Number must be 1–2 digits.');
-      }
-      const missing = [...form.querySelectorAll('[required]')].find((el) => !el.value.trim());
-      if (missing) {
-        missing.focus();
-        return toast('Please fill in: ' + form.querySelector(`label[for="${missing.id}"]`).textContent.trim());
-      }
       const qty = Math.max(1, Math.min(10, parseInt(form.qty.value, 10) || 1));
-      addToCart(t.id, readOptions(form, t), qty);
+      addToCart(t.id, qty);
       toast(`${t.name} added to cart`);
       location.hash = '#/cart';
     });
@@ -292,14 +197,14 @@
     const ship = CFG.shippingFlat;
     const items = cart.map((i, idx) => {
       const t = CAT.findTier(i.tierId);
-      const unit = CAT.unitPrice(i.tierId, i.options);
+      const unit = CAT.unitPrice(i.tierId);
       return `
         <div class="cart-item">
-          <div class="cart-thumb">${helmetSVG({ ...previewFor(i.tierId, i.options), signed: false, label: t.name })}</div>
+          <div class="cart-thumb">${helmetSVG({ ...previewFor(i.tierId), signed: false, label: t.name })}</div>
           <div>
             <h3>${esc(t.name)}</h3>
             <div class="tier-type">${esc(t.helmetType)}</div>
-            <div class="cart-opts">${describeOptions(i.tierId, i.options).map(esc).join('<br/>')}</div>
+            <div class="cart-opts">${esc(randomNote(i.tierId))}</div>
           </div>
           <div class="cart-right">
             <strong>${money(unit * i.qty)}</strong>
@@ -329,7 +234,7 @@
 
   function requestForm() {
     return `
-      <div class="notice">Send us your order and we'll confirm signer availability and email you an invoice. You won't be charged until then.</div>
+      <div class="notice">Send us your order and we'll email you an invoice. You won't be charged until then.</div>
       <form id="request-form">
         <input type="text" name="bot-field" hidden tabindex="-1" autocomplete="off" />
         <div class="field"><label for="r-name">Full name</label><input id="r-name" type="text" name="name" required autocomplete="name" /></div>
@@ -346,7 +251,7 @@
   function orderText() {
     return cart.map((i, n) => {
       const t = CAT.findTier(i.tierId);
-      return `${n + 1}. ${t.name} (${t.helmetType}) x${i.qty} — ${money(CAT.unitPrice(i.tierId, i.options) * i.qty)}\n   ${describeOptions(i.tierId, i.options).join('\n   ')}`;
+      return `${n + 1}. ${t.name} (${t.helmetType}) x${i.qty} — ${money(CAT.unitPrice(i.tierId) * i.qty)} (${randomNote(i.tierId)})`;
     }).join('\n') + `\nShipping: ${money(CFG.shippingFlat)}\nTotal: ${money(cartSubtotal() + CFG.shippingFlat)}`;
   }
 
@@ -373,7 +278,7 @@
         const res = await fetch('/.netlify/functions/create-checkout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ items: cart.map(({ tierId, options, qty }) => ({ tierId, options, qty })) }),
+          body: JSON.stringify({ items: cart.map(({ tierId, qty }) => ({ tierId, qty })) }),
         });
         const data = await res.json();
         if (!res.ok || !data.url) throw new Error(data.error || 'Checkout failed');
@@ -418,7 +323,7 @@
         <span class="coa-badge">✓ ${kind === 'request' ? 'Request received' : 'Order confirmed'}</span>
         <h1 style="margin-top:16px">Thank you!</h1>
         <p class="muted">${kind === 'request'
-          ? "We'll confirm signer availability and email you an invoice shortly."
+          ? "We'll email you an invoice shortly."
           : "Your payment went through. We'll email you when your helmet has been signed, with its COA serial number."}</p>
         <a class="btn btn-ghost" href="#/">Back to shop</a>
       </div>`;
