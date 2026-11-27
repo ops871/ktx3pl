@@ -1,0 +1,8 @@
+{
+  "name": "lid-ripper",
+  "private": true,
+  "description": "Lid Ripper storefront: Netlify functions dependencies",
+  "dependencies": {
+    "@netlify/blobs": "10.7.13"
+  }
+}
